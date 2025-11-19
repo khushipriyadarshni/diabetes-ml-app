@@ -3,6 +3,7 @@
 # pyright: reportMissingImports=false
 import json
 import os
+import datetime
 from pathlib import Path
 from typing import Dict, Any, Tuple, Optional, List
 import pandas as pd
@@ -12,6 +13,14 @@ import plotly.graph_objects as go
 import plotly.express as px
 import joblib
 from sklearn.pipeline import Pipeline
+from auth_utils import (
+    load_users,
+    save_users,
+    hash_password,
+    authenticate_user,
+)
+from history import save_history, history_dashboard
+from reports.pdf_utils import generate_pdf_report, download_pdf_button
 
 
 # Input schema for validation
@@ -591,13 +600,106 @@ def generate_prescription_suggestion(
     return result
 
 
+def render_auth_page() -> None:
+    """Render login/signup interface for unauthenticated users."""
+    st.title("🔐 Secure Access")
+    st.markdown(
+        "Please log in or create an account to access the Diabetes Risk Prediction dashboard."
+    )
+
+    login_tab, signup_tab = st.tabs(["Login", "Sign Up"])
+
+    # Login tab
+    with login_tab:
+        st.subheader("Login")
+        with st.form("login_form"):
+            login_username = st.text_input("Username", key="login_username")
+            login_password = st.text_input(
+                "Password", type="password", key="login_password"
+            )
+            login_submit = st.form_submit_button("Log In")
+
+        if login_submit:
+            if not login_username or not login_password:
+                st.error("Please enter both username and password.")
+            else:
+                success, user_info = authenticate_user(login_username, login_password)
+                if success and user_info:
+                    st.session_state["user"] = user_info
+                    st.success("Login successful! Redirecting...")
+                    st.rerun()
+                else:
+                    st.error("Invalid username or password.")
+
+    # Signup tab
+    with signup_tab:
+        st.subheader("Create Account")
+        with st.form("signup_form"):
+            signup_username = st.text_input("Username", key="signup_username")
+            signup_email = st.text_input("Email", key="signup_email")
+            signup_password = st.text_input(
+                "Password", type="password", key="signup_password"
+            )
+            signup_confirm = st.text_input(
+                "Confirm Password", type="password", key="signup_confirm"
+            )
+            signup_submit = st.form_submit_button("Create Account")
+
+        if signup_submit:
+            if not all(
+                [signup_username.strip(), signup_email.strip(), signup_password, signup_confirm]
+            ):
+                st.error("All fields are required.")
+            elif signup_password != signup_confirm:
+                st.error("Passwords do not match.")
+            else:
+                users = load_users()
+                if signup_username in users:
+                    st.error("Username already exists. Please choose a different one.")
+                else:
+                    users[signup_username] = {
+                        "password_hash": hash_password(signup_password),
+                        "email": signup_email.strip(),
+                    }
+                    save_users(users)
+                    st.success("Account created successfully! Please log in.")
+
+
+def logout_user() -> None:
+    """Clear user session and rerun app."""
+    st.session_state.pop("user", None)
+    st.rerun()
+
+
 def main() -> None:
     """Main Streamlit app function."""
     st.set_page_config(page_title="Diabetes Risk Prediction", page_icon="🏥", layout="wide")
+
+    # Initialize user session
+    if "user" not in st.session_state:
+        st.session_state["user"] = None
+
+    if not st.session_state["user"]:
+        render_auth_page()
+        st.stop()
+    
+    # Check if history dashboard should be shown
+    if st.session_state.get("show_history"):
+        history_dashboard(st.session_state["user"]["username"])
+        return
     
     st.title("🏥 Diabetes Risk Prediction")
     st.markdown("Predict the risk of diabetes based on patient features")
     
+    # Sidebar welcome + logout
+    st.sidebar.markdown(f"### Welcome, {st.session_state['user']['username']}")
+    st.sidebar.caption(st.session_state["user"].get("email", ""))
+    if st.sidebar.button("📂 My History"):
+        st.session_state["show_history"] = True
+        st.rerun()
+    if st.sidebar.button("Logout"):
+        logout_user()
+
     # Load model and metadata
     try:
         model, metadata = load_model()
@@ -721,6 +823,43 @@ def main() -> None:
                         # See doctor indicator
                         if guidance["see_doctor"]:
                             st.info("💼 **Clinical consultation recommended**")
+                        
+                        # Save to history and generate PDF
+                        current_user = st.session_state.get("user")
+                        if current_user:
+                            # Build record for saving
+                            record = {
+                                "timestamp": datetime.datetime.utcnow().isoformat(),
+                                "inputs": inputs,
+                                "probability": float(probability),
+                                "prediction": int(prediction),
+                                "risk_level": "High Risk" if prediction == 1 else "Low Risk",
+                                "guidance": guidance,
+                            }
+                            
+                            # Save to user's history
+                            try:
+                                save_history(current_user["username"], record)
+                            except Exception as e:
+                                st.warning(f"Could not save to history: {str(e)}")
+                            
+                            # Generate PDF report
+                            try:
+                                reports_dir = "reports"
+                                os.makedirs(reports_dir, exist_ok=True)
+                                pdf_filename = f"report_{current_user['username']}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+                                pdf_path = os.path.join(reports_dir, pdf_filename)
+                                generate_pdf_report(current_user["username"], record, pdf_path)
+                                
+                                # PDF download button
+                                st.markdown("---")
+                                st.subheader("📄 Download Report")
+                                download_pdf_button(pdf_path, "📥 Download PDF Report", pdf_filename)
+                            except ImportError as e:
+                                st.warning(f"PDF generation requires reportlab. Please install it: `pip install reportlab==4.0.9`")
+                                st.info(f"Error: {str(e)}")
+                            except Exception as e:
+                                st.warning(f"Could not generate PDF: {str(e)}")
                     
                     except Exception as e:
                         st.error(f"Error generating clinical guidance: {str(e)}")
