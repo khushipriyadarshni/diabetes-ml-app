@@ -1,0 +1,79 @@
+.custom-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 14px 0px;
+    backdrop-filter: blur(12px);
+    background: linear-gradient(120deg, rgba(255, 255, 255, 0.75), rgba(245, 245, 245, 0.55));
+    border-top: 1px solid rgba(255, 255, 255, 0.35);
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: #2d2d2d;
+    box-shadow: 0px -2px 10px rgba(0, 0, 0, 0.08);
+    animation: fadeInUp 0.35s ease-in-out;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.custom-footer .footer-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.custom-footer .footer-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    font-size: 13px;
+    color: #1f1f1f;
+}
+
+.custom-footer .about-link {
+    color: #0073ff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity 0.2s ease;
+}
+
+.custom-footer .about-link:hover {
+    opacity: 0.75;
+}
+
+@media (prefers-color-scheme: dark) {
+    .custom-footer {
+        background: linear-gradient(120deg, rgba(20, 20, 20, 0.75), rgba(10, 10, 10, 0.55));
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        color: #f3f3f3;
+    }
+    .custom-footer .footer-pill {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #f7f7f7;
+    }
+    .custom-footer .about-link {
+        color: #4da3ff;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}
+

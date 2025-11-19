@@ -1135,3 +1135,7 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 
+from footer import inject_footer
+
+inject_footer()
+
