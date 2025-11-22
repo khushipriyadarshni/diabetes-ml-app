@@ -1,0 +1,52 @@
+[
+  {
+    "timestamp": "2025-11-22T15:43:42.872610",
+    "inputs": {
+      "Pregnancies": 8,
+      "Glucose": 121.5,
+      "BloodPressure": 73.0,
+      "SkinThickness": 53.0,
+      "Insulin": 430.0,
+      "BMI": 42.65,
+      "DiabetesPedigreeFunction": 1.2489999999999999,
+      "Age": 51
+    },
+    "probability": 0.67,
+    "prediction": 1,
+    "risk_level": "High Risk",
+    "guidance": {
+      "triage_level": "soon",
+      "rationale": "Timely evaluation recommended due to: elevated risk probability.",
+      "recommendation_text": "Schedule a clinical visit within 2-4 weeks. Focus on hydration, balanced nutrition with whole foods, regular moderate activity, quality sleep, and stress reduction. Book an appointment with a clinician; do not self-medicate. Track your health metrics weekly.",
+      "otc_considerations": [
+        "dietary counseling resources"
+      ],
+      "see_doctor": true
+    }
+  },
+  {
+    "timestamp": "2025-11-22T15:44:46.424989",
+    "inputs": {
+      "Pregnancies": 8,
+      "Glucose": 121.5,
+      "BloodPressure": 73.0,
+      "SkinThickness": 53.0,
+      "Insulin": 430.0,
+      "BMI": 42.65,
+      "DiabetesPedigreeFunction": 1.2489999999999999,
+      "Age": 51
+    },
+    "probability": 0.67,
+    "prediction": 1,
+    "risk_level": "High Risk",
+    "guidance": {
+      "triage_level": "soon",
+      "rationale": "Timely evaluation recommended due to: elevated risk probability.",
+      "recommendation_text": "Schedule a clinical visit within 2-4 weeks. Focus on hydration, balanced nutrition with whole foods, regular moderate activity, quality sleep, and stress reduction. Book an appointment with a clinician; do not self-medicate. Track your health metrics weekly.",
+      "otc_considerations": [
+        "dietary counseling resources"
+      ],
+      "see_doctor": true
+    }
+  }
+]
